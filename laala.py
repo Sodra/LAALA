@@ -22,6 +22,7 @@ openai.api_key = str(priTicket)
 
 with open('laala_prompt.txt', 'r') as file:
     system_desu = file.read().strip()
+    system_desu_count = count_tokens(system_desu)
 
 #initialPrompt = r"Introduce yourself at first with 'Beep Boop~ LAALA Here~', Do not re-introduce yourself afterwards."
 #{"role": "user", "content": initialPrompt}
@@ -33,7 +34,7 @@ chatHistory = []
 print("## LAALA ONLINE c: ##\n")
 
 message_history = [
-                ({"role": "user", "content": system_desu}, 4),
+                ({"role": "user", "content": system_desu}, system_desu_count),
             ]
 
 messages = strip_count(message_history)
