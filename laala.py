@@ -3,8 +3,8 @@ from colorama import init, Fore, Back, Style
 init()
 
 with open('api.key', 'r') as file:
-    priTicket = file.read().strip
-openai.api_key = priTicket
+    priTicket = file.read().strip()
+openai.api_key = str(priTicket)
 
 with open('laala_prompt.txt', 'r') as file:
     system_desu = file.read().strip()
