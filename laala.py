@@ -3,11 +3,11 @@ from colorama import init, Fore, Back, Style
 init()
 
 with open('api.key', 'r') as file:
-  priTicket = file.read().strip
+    priTicket = file.read().strip
 openai.api_key = priTicket
 
 with open('laala_prompt.txt', 'r') as file:
-  system_desu = file.read().strip()
+    system_desu = file.read().strip()
 
 #initialPrompt = r"Introduce yourself at first with 'Beep Boop~ LAALA Here~', Do not re-introduce yourself afterwards."
 #{"role": "user", "content": initialPrompt}
