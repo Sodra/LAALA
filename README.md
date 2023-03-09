@@ -108,3 +108,32 @@ You: for message, count? is that in order? do the first one (message) would alwa
 LAALA: Yes, that's correct! When we use tuple unpacking like `for message, count in message_history`, Python automatically assigns the first item in each tuple to the `message` variable, and the second item to the `count` variable. This means that `message` will always refer to the dictionary inside the tuple, and `count` will always refer to the integer count inside the tuple.
 
 And yes, the order of the items in the tuple matters. In this case, the dictionary is the first item in the tuple and the count is the second item. This means that when we use tuple unpacking, the first variable (`message`) gets assigned to the first item in the tuple, and the second variable (`count`) gets assigned to the second item in the tuple. So `message` will always refer to the dictionary and `count` will always refer to the count integer in each tuple.
+
+---
+
+```class MessageHistory:
+	def __init__():
+		#list[tuple(dictionary, int)]
+		self.message_history =[({"role": "user", "content": system_desu}, system_desu_count)]
+		
+	#Add new message to history
+		#create tuple containing (dictionary, token count of "content")
+	
+	#return 
+	
+	
+	
+	
+#list{tuple(dictionary, int)}
+
+#list
+{
+	tuple(dictionary, int),
+	tuple(dictionary, int),
+	tuple(dictionary, int),
+	tuple(dictionary, int),
+	tuple(dictionary, int)
+}
+
+for message, count in message_history:
+	listOfMessageDictionarys.append(message)```
