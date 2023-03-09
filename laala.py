@@ -1,6 +1,7 @@
 import openai
 from transformers import GPT2TokenizerFast
 from colorama import init, Fore, Back, Style
+import sys
 init()
 
 max_context_size = 2048
@@ -29,18 +30,33 @@ def pop_history(history_token_size):
         message_history.pop(0)
     return history_token_size
 
+# starts by asking for your You: input, returns the raw string of your input.
+def inputYourPrompt():
+    prompt = input(Fore.CYAN + "You: ")
+    return prompt
+
+def append_history_to_send(message_history, prompt, prompt_tokens):
+    message_history.append(tuple([{"role": "user", "content": prompt}, prompt_tokens]))
+
+# TODO I guess this should somehow be fixed so we dont have two functions doing the same thing, i tried with append_history_to_send
+# but it would error out.
+def append_history_to_send_again(message_history, rawMessage, message_tokens):
+    message_history.append(tuple([rawMessage.message, message_tokens]))
+    
+
 with open('api.key', 'r') as file:
     priTicket = file.read().strip()
 openai.api_key = str(priTicket)
 
-with open('laala_prompt.txt', 'r') as file:
-    system_desu = file.read().strip()
-    system_desu_count = count_tokens(system_desu)
-
-#initialPrompt = r"Introduce yourself at first with 'Beep Boop~ LAALA Here~', Do not re-introduce yourself afterwards."
-#{"role": "user", "content": initialPrompt}
-
-#PINK = '\033[38;5;218m'
+# switches from normal mode to boring mode if "boring" argument is passed
+if len(sys.argv) > 1 and sys.argv[1] == "boring":
+    with open('boring_mode.txt', 'r') as file:
+        system_desu = file.read().strip()
+        system_desu_count = count_tokens(system_desu)
+else:
+    with open('laala_prompt.txt', 'r') as file:
+        system_desu = file.read().strip()
+        system_desu_count = count_tokens(system_desu)
 
 chatHistory = []
 
@@ -66,12 +82,17 @@ firstMessage.choices[0].message.content = "Beep Boop~ LAALA Here~ " + firstMessa
 while True:
     # Send the prompt to the OpenAI API
     print("")
-    prompt = input(Fore.CYAN + "You: ")
+    prompt = inputYourPrompt()
+    
     prompt_tokens = count_tokens(prompt)
-    message_history.append(tuple([{"role": "user", "content": prompt}, prompt_tokens]))
+    
+    #message_history.append(tuple([{"role": "user", "content": prompt}, prompt_tokens]))
+    append_history_to_send(message_history, prompt, prompt_tokens)
+    
     history_token_size += prompt_tokens
     history_token_size = pop_history(history_token_size)
     messages = strip_count(message_history)
+    
     completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
 		messages = messages
@@ -81,7 +102,9 @@ while True:
     message = rawMessage.message.content.lstrip('\n')
     message_tokens = count_tokens(message)
     history_token_size += message_tokens
-    message_history.append(tuple([rawMessage.message, message_tokens]))
+    #message_history.append(tuple([rawMessage.message, message_tokens]))
+    #append_history_to_send(message_history, rawMessage.message, message_tokens)
+    append_history_to_send_again(message_history, rawMessage, message_tokens)
     print("")
     print(Fore.LIGHTRED_EX + "LAALA: " + message + Style.RESET_ALL)
     print("")
