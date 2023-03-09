@@ -1,2 +1,3 @@
 # User api keys, for obvious reasons
 *.key
+*.log
