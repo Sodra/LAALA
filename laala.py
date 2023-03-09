@@ -50,7 +50,7 @@ openai.api_key = str(priTicket)
 
 # TODO proper argument passing
 # switches from normal mode to boring mode if "boring" argument is passed
-if len(sys.argv) > 1 and sys.argv[1] == "boring":
+if "boring" in sys.argv:
     with open('boring_mode.txt', 'r') as file:
         system_desu = file.read().strip()
         system_desu_count = count_tokens(system_desu)
@@ -68,10 +68,10 @@ chatHistory = []
 
 print("## LAALA ONLINE c: ##\n")
 
+# TODO: Make this a proper class/object with sane returns
 # TODO: Separate the initial system_desu prompt from the regular history so it doesn't get removed once context limit is hit
-message_history =
-    [
-        (
+# I tried to make this all fancy because its types in types, but it didnt like my formatting. Will fix with class.
+message_history =[(
             {"role": "user", "content": system_desu}, system_desu_count
         ),
     ]
@@ -81,8 +81,7 @@ messages = strip_count(message_history)
 #4000 = sum(500,500,500,500)
 history_token_size = sum(t[1] for t in message_history)
 
-firstMessage = openai.ChatCompletion.create
-    (
+firstMessage = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
 		messages = strip_count(message_history)
     )
@@ -104,8 +103,7 @@ while True:
     history_token_size = pop_history(history_token_size)
     messages = strip_count(message_history)
     
-    completion = openai.ChatCompletion.create
-    (
+    completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
 		messages = messages
     )
