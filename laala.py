@@ -16,6 +16,7 @@ with open('laala_prompt.txt', 'r') as file:
 chatHistory = []
 
 print("## LAALA ONLINE c: ##\n")
+historizer("## LAALA ONLINE c: ##\n")
 
 messages = [
                 {"role": "user", "content": system_desu},
@@ -25,6 +26,7 @@ firstMessage = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
 		messages=messages
     )
+historizer(firstMessage)
 print(Fore.LIGHTRED_EX + "LAALA: Beep Boop~ LAALA Here~ " + firstMessage.choices[0].message.content.lstrip('\n') + Style.RESET_ALL)
 
 firstMessage.choices[0].message.content = "Beep Boop~ LAALA Here~ " + firstMessage.choices[0].message.content
@@ -39,6 +41,7 @@ while True:
 		messages=messages
     )
     
+    historizer(completion)
     rawMessage = completion.choices[0]
     messages.append(rawMessage.message)
     message = rawMessage.message.content.lstrip('\n')
