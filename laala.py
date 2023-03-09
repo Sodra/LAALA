@@ -5,11 +5,13 @@ init()
 
 tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
 
+# count tokens of message content
 def count_tokens(payload):
     tokend = tokenizer.encode(payload)
     num_tokens = len(tokend)
     return num_tokens
 
+# strip token count from history tuple, return api responses only
 def strip_count(message_history : tuple) -> list:
     stripped_history = [i[0] for i in message_history]
     return stripped_history
