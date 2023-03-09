@@ -1,3 +1,2 @@
-# User api key, for obvious reasons
-api.key
-api.key
+# User api keys, for obvious reasons
+*.key
