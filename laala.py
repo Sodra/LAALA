@@ -69,15 +69,20 @@ chatHistory = []
 print("## LAALA ONLINE c: ##\n")
 
 # TODO: Separate the initial system_desu prompt from the regular history so it doesn't get removed once context limit is hit
-message_history = [
-                ({"role": "user", "content": system_desu}, system_desu_count),
-            ]
+message_history =
+    [
+        (
+            {"role": "user", "content": system_desu}, system_desu_count
+        ),
+    ]
 
 messages = strip_count(message_history)
 
+#4000 = sum(500,500,500,500)
 history_token_size = sum(t[1] for t in message_history)
 
-firstMessage = openai.ChatCompletion.create(
+firstMessage = openai.ChatCompletion.create
+    (
         model="gpt-3.5-turbo",
 		messages = strip_count(message_history)
     )
@@ -94,12 +99,13 @@ while True:
     
     #message_history.append(tuple([{"role": "user", "content": prompt}, prompt_tokens]))
     append_history_to_send(message_history, prompt, prompt_tokens)
-    
+
     history_token_size += prompt_tokens
     history_token_size = pop_history(history_token_size)
     messages = strip_count(message_history)
     
-    completion = openai.ChatCompletion.create(
+    completion = openai.ChatCompletion.create
+    (
         model="gpt-3.5-turbo",
 		messages = messages
     )
