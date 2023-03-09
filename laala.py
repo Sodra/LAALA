@@ -4,6 +4,7 @@ from colorama import init, Fore, Back, Style
 init()
 
 max_context_size = 2048
+# TODO: make response size affect API request, currently doesn't actually affect response size, only for context limit calc
 max_response_size = 300
 max_history_size = max_context_size - max_response_size
 
