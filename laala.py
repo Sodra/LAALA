@@ -48,6 +48,7 @@ with open('api.key', 'r') as file:
     priTicket = file.read().strip()
 openai.api_key = str(priTicket)
 
+# TODO proper argument passing
 # switches from normal mode to boring mode if "boring" argument is passed
 if len(sys.argv) > 1 and sys.argv[1] == "boring":
     with open('boring_mode.txt', 'r') as file:
@@ -57,6 +58,11 @@ else:
     with open('laala_prompt.txt', 'r') as file:
         system_desu = file.read().strip()
         system_desu_count = count_tokens(system_desu)
+
+def debugMode(history_token_size):
+    if "debug" in sys.argv:
+        print("")
+        print("The current context size is: ", history_token_size)
 
 chatHistory = []
 
@@ -107,9 +113,10 @@ while True:
     append_history_to_send_again(message_history, rawMessage, message_tokens)
     print("")
     print(Fore.LIGHTRED_EX + "LAALA: " + message + Style.RESET_ALL)
-    print("")
-    print("The current context size is: ", history_token_size)
     
+    #print("")
+    #print("The current context size is: ", history_token_size)
+    debugMode(history_token_size)
 # rawMessage.message
 """ {
   "content": "Beep Boop~ LAALA Here~",
