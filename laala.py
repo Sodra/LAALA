@@ -2,17 +2,16 @@ import openai
 from colorama import init, Fore, Back, Style
 init()
 
+def historizer(just_put_every_request_in_here_whatever):
+    with open('chat.log', 'a') as file:
+        file.write(str(just_put_every_request_in_here_whatever) + "\n")
+
 with open('api.key', 'r') as file:
     priTicket = file.read().strip()
 openai.api_key = str(priTicket)
 
 with open('laala_prompt.txt', 'r') as file:
     system_desu = file.read().strip()
-
-#initialPrompt = r"Introduce yourself at first with 'Beep Boop~ LAALA Here~', Do not re-introduce yourself afterwards."
-#{"role": "user", "content": initialPrompt}
-
-#PINK = '\033[38;5;218m'
 
 chatHistory = []
 
