@@ -35,14 +35,15 @@ def inputYourPrompt():
     prompt = input(Fore.CYAN + "You: ")
     return prompt
 
-def append_history_to_send(message_history, prompt, prompt_tokens):
-    message_history.append(tuple([{"role": "user", "content": prompt}, prompt_tokens]))
-
-# TODO I guess this should somehow be fixed so we dont have two functions doing the same thing, i tried with append_history_to_send
-# but it would error out.
-def append_history_to_send_again(message_history, rawMessage, message_tokens):
-    message_history.append(tuple([rawMessage.message, message_tokens]))
-    
+# append sent or recieved message to message history
+def append_history_to_send(message_history, prompt, prompt_tokens, append_type):
+    if append_type == 'prompt':
+        message_history.append(tuple([{"role": "user", "content": prompt}, prompt_tokens]))
+    elif append_type == 'response':
+        message_history.append(tuple([rawMessage.message, message_tokens]))
+    else:
+        input('Error: no valid append type selected')
+    return message_history
 
 with open('api.key', 'r') as file:
     priTicket = file.read().strip()
@@ -97,7 +98,7 @@ while True:
     prompt_tokens = count_tokens(prompt)
     
     #message_history.append(tuple([{"role": "user", "content": prompt}, prompt_tokens]))
-    append_history_to_send(message_history, prompt, prompt_tokens)
+    append_history_to_send(message_history, prompt, prompt_tokens, 'prompt')
 
     history_token_size += prompt_tokens
     history_token_size = pop_history(history_token_size)
@@ -114,7 +115,7 @@ while True:
     history_token_size += message_tokens
     #message_history.append(tuple([rawMessage.message, message_tokens]))
     #append_history_to_send(message_history, rawMessage.message, message_tokens)
-    append_history_to_send_again(message_history, rawMessage, message_tokens)
+    append_history_to_send(message_history, rawMessage, message_tokens, 'response')
     print("")
     print(Fore.LIGHTRED_EX + "LAALA: " + message + Style.RESET_ALL)
     
