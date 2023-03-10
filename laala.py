@@ -22,6 +22,7 @@ class MessageHistoryStore:
     #OUTPUT: [{"role": "USER", "content": "HELLO"}, 1]
     def entryFormatter(self, prompt, messageSide):
         self.dictionaryCreator = {"role": messageSide, "content": prompt}
+        #TODO: Straight up, just countToken(prompt) and add to the tuple. ezpz
         self.tupleToEntry = (self.dictionaryCreator, 1)
         return self.tupleToEntry
 
@@ -37,21 +38,33 @@ class MessageHistoryStore:
         self.messagesToSend = self.formattedHistoryForAPI()
         self.rawAPIResponse = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
-        		messages = self.messagesToSend,
-        		temperature = 1
+        		messages = self.messagesToSend
             )
         ###Response
-        self.AI_Response = self.rawAPIResponse.choices[0].message
+        self.AI_Response = self.rawAPIResponse.choices[0].message.content
         self.newEntry(self.AI_Response, "assistant")
         return self.AI_Response
 
-    def getResponse(self):
+    #####
+    #send request
+    #####
+
+    def receiveResponse(self):
         self.AI_message = self.sendRequestToAPI()
         return self.AI_message
 
-    def sendRequest(self, prompt):
+    def makeRequestToSend(self, prompt):
         self.newEntry(prompt, "user")
-        self.getResponse()
+
+'''class LAALA_UI:
+    def __init__(self):
+        #TODO: Send initial prompt
+        #Display Response
+        #start convo loop
+        
+    def askLAALA() -> str:
+        prompt = input(Fore.CYAN + "You: ")
+        return prompt'''
 
 with open('api.key', 'r') as file:
     priTicket = file.read().strip()
@@ -66,7 +79,14 @@ def inputYourPrompt() -> str:
 print("## LAALA ONLINE c: ##\n")
 
 MessageHistoryStore = MessageHistoryStore()
-MessageHistoryStore.newEntry("bingle", "user")
-MessageHistoryStore.sendRequest("bingle")
-print("########")
-print(MessageHistoryStore.getResponse())
+#MessageHistoryStore.newEntry("bingle", "user")
+while True:
+    thisItYourPrompt = inputYourPrompt()
+    print("")
+    MessageHistoryStore.makeRequestToSend(thisItYourPrompt)
+    print(Fore.LIGHTRED_EX + "LAALA: " + MessageHistoryStore.receiveResponse().lstrip())
+    print("")
+#print(MessageHistoryStore.receiveResponse())
+#print(MessageHistoryStore.message_history)
+#print(MessageHistoryStore.receiveResponse())
+
