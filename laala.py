@@ -1,6 +1,7 @@
 import openai
 from transformers import GPT2TokenizerFast
 from colorama import init, Fore, Back, Style
+from typing import List
 import sys
 init()
 
@@ -8,7 +9,19 @@ max_context_size = 2048
 # TODO: make response size affect API request, currently doesn't actually affect response size, only for context limit calc
 max_response_size = 300
 max_history_size = max_context_size - max_response_size
-
+# TODO: break these out into a config
+comp_model = "gpt-3.5-turbo",
+comp_messages = None, 
+comp_temp = 1.0, 
+comp_top_p = 0.0, 
+comp_n = 1, 
+comp_stream = False, 
+comp_stop = None, 
+comp_max_tokens = 4096, 
+comp_pres_penal = 0, 
+comp_freq_penal = 0, 
+comp_logit_bias = None, 
+comp_user = None
 
 tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
 
@@ -39,29 +52,45 @@ class MessageHistoryStore:
         self.respTokens = countTokens(responseDict.content)
         self.message_history.append(tuple(responseDict.content, self.respTokens))
         
-    def sendQuery(self, formatedListOfDicts):
+#    def sendQuery(self, formatedListOfDicts):
     
-    def recieveQuery():
+#    def recieveQuery():
     
     
 
-start of loop
-    take the prompt you want to send (initial or input)
-        messageHistory = MessageHistoryStore(dictionaryContainingInitialPrompt)
-        or
-        messageHistory.newEntry(prompt)
-            # newEntry will turn prompt --> ({prompt}, 3)
-    send gpt the messageHistory
-        messageHistory.sendQuery()
-    ---
-    recieve the response
-        response = messageHistory.recieveQuery()
-    add response to the messageHistory
-        messageHistory.newEntry(response)
-    print response
-        print(response)
+#start of loop
+#    take the prompt you want to send (initial or input)
+#        messageHistory = MessageHistoryStore(dictionaryContainingInitialPrompt)
+#        or
+#        messageHistory.newEntry(prompt)
+#            # newEntry will turn prompt --> ({prompt}, 3)
+#    send gpt the messageHistory
+#        messageHistory.sendQuery()
+#    ---
+#    recieve the response
+#        response = messageHistory.recieveQuery()
+#    add response to the messageHistory
+#        messageHistory.newEntry(response)
+#    print response
+#        print(response)
     
-go to start
+#go to start
+
+def completionRequest():
+    openai.ChatCompletion.create(
+        model = comp_model,
+        messages = comp_messages,
+        temperature = comp_temp,
+        top_p = comp_top_p,
+        n = comp_n,
+        stream = comp_stream,
+        stop = comp_stop,
+        max_tokens = comp_max_tokens,
+        presence_penalty = comp_pres_penal,
+        frequency_penalty = comp_freq_penal,
+        logit_bias = comp_logit_bias,
+        user = comp_user
+    )      
 
 # count tokens of message content
 def countTokens(payload : str) -> int:
@@ -127,7 +156,7 @@ message_history =[(
         ),
     ]
 
-messages = stripCount(message_history)
+comp_messages = stripCount(message_history)
 
 #4000 = sum(500,500,500,500)
 history_token_size = sum(t[1] for t in message_history)
@@ -152,11 +181,10 @@ while True:
 
     history_token_size += prompt_tokens
     history_token_size = popHistory(history_token_size)
-    messages = stripCount(message_history)
+    comp_messages = stripCount(message_history)
     
-    completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-		messages = messages
+    completion = completionRequest(
+		comp_messages
     )
     
     rawMessage = completion.choices[0]
