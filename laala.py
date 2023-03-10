@@ -16,9 +16,7 @@ init()
 
 class MessageHistoryStore:
     def __init__(self):
-        self.message_history = [
-            ({},1),
-        ]
+        self.message_history = []
 
     #INPUT: "USER" "HELLO"
     #OUTPUT: [{"role": "USER", "content": "HELLO"}, 1]
@@ -31,9 +29,29 @@ class MessageHistoryStore:
         addThisThingToHistory = self.entryFormatter(prompt, messageSide)
         self.message_history.append(addThisThingToHistory)
 
-    def sendHistoryToAPI(self):
+    def formattedHistoryForAPI(self):
         self.historyDictionariesOnly = [item[0] for item in self.message_history]
         return self.historyDictionariesOnly
+
+    def sendRequestToAPI(self):
+        self.messagesToSend = self.formattedHistoryForAPI()
+        self.rawAPIResponse = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+        		messages = self.messagesToSend,
+        		temperature = 1
+            )
+        ###Response
+        self.AI_Response = self.rawAPIResponse.choices[0].message
+        self.newEntry(self.AI_Response, "assistant")
+        return self.AI_Response
+
+    def getResponse(self):
+        self.AI_message = self.sendRequestToAPI()
+        return self.AI_message
+
+    def sendRequest(self, prompt):
+        self.newEntry(prompt, "user")
+        self.getResponse()
 
 with open('api.key', 'r') as file:
     priTicket = file.read().strip()
@@ -49,6 +67,6 @@ print("## LAALA ONLINE c: ##\n")
 
 MessageHistoryStore = MessageHistoryStore()
 MessageHistoryStore.newEntry("bingle", "user")
-print(MessageHistoryStore.sendHistoryToAPI())
-print("t########")
-print(MessageHistoryStore.message_history)
+MessageHistoryStore.sendRequest("bingle")
+print("########")
+print(MessageHistoryStore.getResponse())
