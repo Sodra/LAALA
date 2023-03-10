@@ -12,6 +12,57 @@ max_history_size = max_context_size - max_response_size
 
 tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
 
+# Message History Class
+# Contains Message History for gpt context
+class MessageHistoryStore:
+    def __init__(self):
+        self.message_history = [
+            ({},1),
+            ({},1),
+            ({},1),
+            ({},1),
+        ]
+    
+    def newUserEntry(self, prompt):
+        #prompt -> {prompt}
+        self.userDictionary = {"role": "user", "content": prompt}
+        
+        #prompt -> tokens
+        self.userTokens = count_tokens(prompt)
+        
+        #takes prompt, formats to correct ({"role": "user", "content": prompt}, 1)
+        self.message_history.append(tuple(self.userDictionary, self.userTokens))
+        
+        
+    def newRespEntry(self, responseDict):
+        #responseDict is {"role": "assistant", "content": "bingle"}
+        self.respTokens = count_tokens(responseDict.content)
+        self.message_history.append(tuple(responseDict.content, self.respTokens))
+        
+    def sendQuery(self, formatedListOfDicts):
+    
+    def recieveQuery():
+    
+    
+
+start of loop
+    take the prompt you want to send (initial or input)
+        messageHistory = MessageHistoryStore(dictionaryContainingInitialPrompt)
+        or
+        messageHistory.newEntry(prompt)
+            # newEntry will turn prompt --> ({prompt}, 3)
+    send gpt the messageHistory
+        messageHistory.sendQuery()
+    ---
+    recieve the response
+        response = messageHistory.recieveQuery()
+    add response to the messageHistory
+        messageHistory.newEntry(response)
+    print response
+        print(response)
+    
+go to start
+
 # count tokens of message content
 def count_tokens(payload):
     tokend = tokenizer.encode(payload)
