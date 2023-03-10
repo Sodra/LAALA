@@ -64,7 +64,7 @@ start of loop
 go to start
 
 # count tokens of message content
-def count_tokens(payload):
+def count_tokens(payload : str) -> int:
     tokend = tokenizer.encode(payload)
     num_tokens = len(tokend)
     return num_tokens
@@ -75,19 +75,19 @@ def strip_count(message_history : tuple) -> list:
     return stripped_history
 
 # pop messages exceeding the user-defined history context size
-def pop_history(history_token_size):
+def pop_history(history_token_size : int) -> int:
     while history_token_size > max_history_size:
         history_token_size -= message_history[0][1]
         message_history.pop(0)
     return history_token_size
 
 # starts by asking for your You: input, returns the raw string of your input.
-def inputYourPrompt():
+def inputYourPrompt() -> str:
     prompt = input(Fore.CYAN + "You: ")
     return prompt
 
 # append sent or recieved message to message history
-def append_history_to_send(message_history, prompt, prompt_tokens, append_type):
+def append_history_to_send(message_history : list, prompt : str, prompt_tokens : int, append_type : str) -> list:
     if append_type == 'prompt':
         message_history.append(tuple([{"role": "user", "content": prompt}, prompt_tokens]))
     elif append_type == 'response':
@@ -100,7 +100,6 @@ with open('api.key', 'r') as file:
     priTicket = file.read().strip()
 openai.api_key = str(priTicket)
 
-# TODO proper argument passing
 # switches from normal mode to boring mode if "boring" argument is passed
 if "boring" in sys.argv:
     with open('boring_mode.txt', 'r') as file:
@@ -111,7 +110,7 @@ else:
         system_desu = file.read().strip()
         system_desu_count = count_tokens(system_desu)
 
-def debugMode(history_token_size):
+def debugMode(history_token_size : int) -> None:
     if "debug" in sys.argv:
         print("")
         print("The current context size is: ", history_token_size)
