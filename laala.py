@@ -7,11 +7,22 @@ init()
 
 
 
-#tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
+tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
+
+if "boring" in sys.argv:
+    with open('boring_mode.txt', 'r') as file:
+        system_desu = file.read().strip()
+else:
+    with open('laala_prompt.txt', 'r') as file:
+        system_desu = file.read().strip()
+
+#def debugMode(history_token_size : int) -> None:
+#    if "debug" in sys.argv:
+#        print("")
+#        print("The current context size is: ", history_token_size)
 
 # Message History Class
 # Contains Message History for gpt context
-
 
 
 class MessageHistoryStore:
@@ -56,21 +67,30 @@ class MessageHistoryStore:
     def makeRequestToSend(self, prompt):
         self.newEntry(prompt, "user")
 
-'''class LAALA_UI:
-    def __init__(self):
-        #TODO: Send initial prompt
-        #Display Response
-        #start convo loop
-        
-    def askLAALA() -> str:
-        prompt = input(Fore.CYAN + "You: ")
-        return prompt'''
+class LAALA_UI:
+    def printLAALA(self, x):
+        print(Fore.LIGHTRED_EX + "LAALA: " + x)
+
+    def askLAALA(self):
+        self.prompt = input(Fore.CYAN + "You: ")
+        return self.prompt
+
+    def convoLoop(self, MessageHistoryStore):
+        MessageHistoryStore.makeRequestToSend(self.askLAALA())
+        self.printLAALA(MessageHistoryStore.receiveResponse())
+        self.convoLoop(MessageHistoryStore)
+
+    def __init__(self, MessageHistoryStore):
+        MessageHistoryStore.makeRequestToSend(system_desu)
+        self.printLAALA(MessageHistoryStore.receiveResponse())
+        self.convoLoop(MessageHistoryStore)
+
 
 with open('api.key', 'r') as file:
     priTicket = file.read().strip()
 openai.api_key = str(priTicket)
 
-def inputYourPrompt() -> str:
+def inputYourPrompt():
     prompt = input(Fore.CYAN + "You: ")
     return prompt
 
@@ -79,13 +99,16 @@ def inputYourPrompt() -> str:
 print("## LAALA ONLINE c: ##\n")
 
 MessageHistoryStore = MessageHistoryStore()
+LAALA = LAALA_UI(MessageHistoryStore)
+
+
 #MessageHistoryStore.newEntry("bingle", "user")
-while True:
-    thisItYourPrompt = inputYourPrompt()
+'''while True:
+    thisIsYourPrompt = LAALA.askLAALA()
     print("")
-    MessageHistoryStore.makeRequestToSend(thisItYourPrompt)
+    MessageHistoryStore.makeRequestToSend(thisIsYourPrompt)
     print(Fore.LIGHTRED_EX + "LAALA: " + MessageHistoryStore.receiveResponse().lstrip())
-    print("")
+    print("")'''
 #print(MessageHistoryStore.receiveResponse())
 #print(MessageHistoryStore.message_history)
 #print(MessageHistoryStore.receiveResponse())
