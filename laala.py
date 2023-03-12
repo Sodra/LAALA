@@ -12,6 +12,9 @@ tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
 if "boring" in sys.argv:
     with open('boring_mode.txt', 'r') as file:
         system_desu = file.read().strip()
+if "big" in sys.argv:
+    with open('big_text.txt', 'r') as file:
+        system_desu = file.read().strip()
 else:
     with open('laala_prompt.txt', 'r') as file:
         system_desu = file.read().strip()
@@ -24,6 +27,8 @@ else:
 # Message History Class
 # Contains Message History for gpt context
 
+#class historyTokenManager:
+#    def __init__(self):
 
 class MessageHistoryStore:
     def __init__(self):
@@ -70,9 +75,11 @@ class MessageHistoryStore:
 class LAALA_UI:
     def printLAALA(self, x):
         print(Fore.LIGHTRED_EX + "LAALA: " + x)
+        print("")
 
     def askLAALA(self):
         self.prompt = input(Fore.CYAN + "You: ")
+        print("")
         return self.prompt
 
     def convoLoop(self, MessageHistoryStore):
