@@ -39,7 +39,7 @@ class MessageHistoryStore:
         self.dictionaryCreator = {"role": messageSide, "content": prompt}
         tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
         self.tokenList = tokenizer(prompt)
-        self.tokenCount = len(self.tokenList)
+        self.tokenCount = len(self.tokenList[0])
         print('Current tokenCount: ', self.tokenCount)
         #TODO: Straight up, just countToken(prompt) and add to the tuple. ezpz
         self.tupleToEntry = (self.dictionaryCreator, self.tokenCount)
