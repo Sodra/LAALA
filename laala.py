@@ -7,7 +7,6 @@ init()
 
 
 
-tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
 
 if "boring" in sys.argv:
     with open('boring_mode.txt', 'r') as file:
@@ -38,8 +37,12 @@ class MessageHistoryStore:
     #OUTPUT: [{"role": "USER", "content": "HELLO"}, 1]
     def entryFormatter(self, prompt, messageSide):
         self.dictionaryCreator = {"role": messageSide, "content": prompt}
+        tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
+        self.tokenList = tokenizer(prompt)
+        self.tokenCount = len(self.tokenList)
+        print('Current tokenCount: ', self.tokenCount)
         #TODO: Straight up, just countToken(prompt) and add to the tuple. ezpz
-        self.tupleToEntry = (self.dictionaryCreator, 1)
+        self.tupleToEntry = (self.dictionaryCreator, self.tokenCount)
         return self.tupleToEntry
 
     def newEntry(self, prompt, messageSide):
