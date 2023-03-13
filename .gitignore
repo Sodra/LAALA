@@ -1,3 +1,4 @@
 # User api keys, for obvious reasons
 *.key
 *.log
+big_text.txt

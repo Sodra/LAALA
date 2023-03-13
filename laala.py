@@ -1,130 +1,160 @@
 import openai
 from transformers import GPT2TokenizerFast
 from colorama import init, Fore, Back, Style
+from typing import List
 import sys
 init()
 
-max_context_size = 2048
-# TODO: make response size affect API request, currently doesn't actually affect response size, only for context limit calc
-max_response_size = 300
-max_history_size = max_context_size - max_response_size
 
 
-tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
 
-# count tokens of message content
-def count_tokens(payload):
-    tokend = tokenizer.encode(payload)
-    num_tokens = len(tokend)
-    return num_tokens
+if "boring" in sys.argv:
+    with open('boring_mode.txt', 'r') as file:
+        system_desu = file.read().strip()
+if "big" in sys.argv:
+    with open('big_text.txt', 'r', encoding='utf-8') as file:
+        system_desu = file.read().strip()
+else:
+    with open('laala_prompt.txt', 'r') as file:
+        system_desu = file.read().strip()
 
-# strip token count from history tuple, return api responses only
-def strip_count(message_history : tuple) -> list:
-    stripped_history = [i[0] for i in message_history]
-    return stripped_history
+#def debugMode(history_token_size : int) -> None:
+#    if "debug" in sys.argv:
+#        print("")
+#        print("The current context size is: ", history_token_size)
 
-# pop messages exceeding the user-defined history context size
-def pop_history(history_token_size):
-    while history_token_size > max_history_size:
-        history_token_size -= message_history[0][1]
-        message_history.pop(0)
-    return history_token_size
+# Message History Class
+# Contains Message History for gpt context
+max_context_size = 4096
+# response size affects API request
+max_response_size = 500
+#max_history_size = max_context_size - max_response_size
 
-# starts by asking for your You: input, returns the raw string of your input.
-def inputYourPrompt():
-    prompt = input(Fore.CYAN + "You: ")
-    return prompt
+class historyTokenManager:
+    def __init__(self):
+        print("bingle")
+        self.tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
+    
+    def countTokens(self, prompt):
+        self.tokenList = self.tokenizer(prompt)
+        self.tokenCount = len(self.tokenList[0])
+        #print('Current tokenCount: ', self.tokenCount)
+        return self.tokenCount
+    
+    def maxTokenSize(self):
+        self.maxTokenSizeNum = max_context_size
+        self.maxTokenResponseSize = max_response_size
+        self.maxHistorySize = self.maxTokenSizeNum - self.maxTokenResponseSize
+        return self.maxHistorySize
 
-# append sent or recieved message to message history
-def append_history_to_send(message_history, prompt, prompt_tokens, append_type):
-    if append_type == 'prompt':
-        message_history.append(tuple([{"role": "user", "content": prompt}, prompt_tokens]))
-    elif append_type == 'response':
-        message_history.append(tuple([rawMessage.message, message_tokens]))
-    else:
-        input('Error: no valid append type selected')
-    return message_history
+    #def countTotalTokens(self):
+    #    self.tokenHistorySum = sum()
+
+    def currentAmountOfTokens(self, x): #this returns the number of tokens in the history right now.
+        return sum(item[1] for item in x)
+
+    def popTokens(self, message_history): #return whole message_history, with tokens popped
+        #print(help(message_history))
+
+        #self.currentAmountOfTokens = sum(item[1] for item in message_history)
+        self.totalAllowedTokens = self.maxTokenSize()
+        while self.currentAmountOfTokens(message_history) > self.totalAllowedTokens:
+            #print("Message history is currently " + str(self.currentAmountOfTokens(message_history)) + ", popping.")
+            message_history.pop(1)
+        #print("Message history is currently " + str(self.currentAmountOfTokens(message_history)) + ", popping complete.")
+        return message_history
+
+#yo if you add "Answer as LAALA" to every last prompt it totally works, you can even remove it per history so it doesn't stay in context
+class MessageHistoryStore:
+    def __init__(self):
+        self.message_history = []
+        self.historyTokenManager = historyTokenManager()
+
+    #INPUT: "USER" "HELLO"
+    #OUTPUT: [{"role": "USER", "content": "HELLO"}, 1]
+    def entryFormatter(self, prompt, messageSide):
+        self.dictionaryCreator = {"role": messageSide, "content": prompt}
+        self.tupleToEntry = (self.dictionaryCreator, self.historyTokenManager.countTokens(prompt))
+        return self.tupleToEntry
+
+    def newEntry(self, prompt, messageSide):
+        addThisThingToHistory = self.entryFormatter(prompt, messageSide)
+        self.message_history.append(addThisThingToHistory)
+
+    def formattedHistoryForAPI(self):
+        self.historyDictionariesOnly = [item[0] for item in self.message_history]
+        return self.historyDictionariesOnly
+
+    def sendRequestToAPI(self):
+        #self.message_history = self.historyTokenManager.popTokens(self.message_history)
+        self.historyTokenManager.popTokens(self.message_history)
+        self.messagesToSend = self.formattedHistoryForAPI()
+        self.rawAPIResponse = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+        		messages = self.messagesToSend,
+                max_tokens=max_response_size
+            )
+        ###Response
+        self.AI_Response = self.rawAPIResponse.choices[0].message.content
+        self.newEntry(self.AI_Response, "assistant")
+        return self.AI_Response
+
+    #####
+    #send request
+    #####
+
+    def receiveResponse(self):
+        self.AI_message = self.sendRequestToAPI()
+        return self.AI_message
+
+    def makeRequestToSend(self, prompt):
+        self.newEntry(prompt, "user")
+
+class LAALA_UI:
+    def printLAALA(self, x):
+        print(Fore.LIGHTRED_EX + "LAALA: " + x)
+        print("")
+
+    def askLAALA(self):
+        self.prompt = input(Fore.CYAN + "You: ")
+        print("")
+        return self.prompt
+
+    def convoLoop(self, MessageHistoryStore):
+        MessageHistoryStore.makeRequestToSend(self.askLAALA())
+        self.printLAALA(MessageHistoryStore.receiveResponse())
+        self.convoLoop(MessageHistoryStore)
+
+    def __init__(self, MessageHistoryStore):
+        MessageHistoryStore.makeRequestToSend(system_desu)
+        self.printLAALA(MessageHistoryStore.receiveResponse())
+        self.convoLoop(MessageHistoryStore)
+
 
 with open('api.key', 'r') as file:
     priTicket = file.read().strip()
 openai.api_key = str(priTicket)
 
-# TODO proper argument passing
-# switches from normal mode to boring mode if "boring" argument is passed
-if "boring" in sys.argv:
-    with open('boring_mode.txt', 'r') as file:
-        system_desu = file.read().strip()
-        system_desu_count = count_tokens(system_desu)
-else:
-    with open('laala_prompt.txt', 'r') as file:
-        system_desu = file.read().strip()
-        system_desu_count = count_tokens(system_desu)
+def inputYourPrompt():
+    prompt = input(Fore.CYAN + "You: ")
+    return prompt
 
-def debugMode(history_token_size):
-    if "debug" in sys.argv:
-        print("")
-        print("The current context size is: ", history_token_size)
 
-chatHistory = []
 
 print("## LAALA ONLINE c: ##\n")
 
-# TODO: Make this a proper class/object with sane returns
-# TODO: Separate the initial system_desu prompt from the regular history so it doesn't get removed once context limit is hit
-# I tried to make this all fancy because its types in types, but it didnt like my formatting. Will fix with class.
-message_history =[(
-            {"role": "user", "content": system_desu}, system_desu_count
-        ),
-    ]
+MessageHistoryStore = MessageHistoryStore()
+LAALA = LAALA_UI(MessageHistoryStore)
 
-messages = strip_count(message_history)
 
-#4000 = sum(500,500,500,500)
-history_token_size = sum(t[1] for t in message_history)
-
-firstMessage = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-		messages = strip_count(message_history)
-    )
-print(Fore.LIGHTRED_EX + "LAALA: Beep Boop~ LAALA Here~ " + firstMessage.choices[0].message.content.lstrip('\n') + Style.RESET_ALL)
-
-firstMessage.choices[0].message.content = "Beep Boop~ LAALA Here~ " + firstMessage.choices[0].message.content
-
-while True:
-    # Send the prompt to the OpenAI API
+#MessageHistoryStore.newEntry("bingle", "user")
+'''while True:
+    thisIsYourPrompt = LAALA.askLAALA()
     print("")
-    prompt = inputYourPrompt()
-    
-    prompt_tokens = count_tokens(prompt)
-    
-    #message_history.append(tuple([{"role": "user", "content": prompt}, prompt_tokens]))
-    append_history_to_send(message_history, prompt, prompt_tokens, 'prompt')
+    MessageHistoryStore.makeRequestToSend(thisIsYourPrompt)
+    print(Fore.LIGHTRED_EX + "LAALA: " + MessageHistoryStore.receiveResponse().lstrip())
+    print("")'''
+#print(MessageHistoryStore.receiveResponse())
+#print(MessageHistoryStore.message_history)
+#print(MessageHistoryStore.receiveResponse())
 
-    history_token_size += prompt_tokens
-    history_token_size = pop_history(history_token_size)
-    messages = strip_count(message_history)
-    
-    completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-		messages = messages
-    )
-    
-    rawMessage = completion.choices[0]
-    message = rawMessage.message.content.lstrip('\n')
-    message_tokens = count_tokens(message)
-    history_token_size += message_tokens
-    #message_history.append(tuple([rawMessage.message, message_tokens]))
-    #append_history_to_send(message_history, rawMessage.message, message_tokens)
-    append_history_to_send(message_history, rawMessage, message_tokens, 'response')
-    print("")
-    print(Fore.LIGHTRED_EX + "LAALA: " + message + Style.RESET_ALL)
-    
-    #print("")
-    #print("The current context size is: ", history_token_size)
-    debugMode(history_token_size)
-# rawMessage.message
-""" {
-  "content": "Beep Boop~ LAALA Here~",
-  "role": "assistant"
-}
-"""
