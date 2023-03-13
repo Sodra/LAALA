@@ -32,7 +32,7 @@ max_response_size = 500
 
 class historyTokenManager:
     def __init__(self):
-        print("bingle")
+        #print("bingle")
         self.tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
     
     def countTokens(self, prompt):
