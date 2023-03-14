@@ -1,8 +1,11 @@
+#!/usr/bin/env python3
+
 import openai
 from colorama import init, Fore, Back, Style
 from typing import List
 import sys
 import tiktoken
+import rich
 init()
 
 
@@ -49,7 +52,7 @@ class historyTokenManager:
         #self.tokenList = self.tokenizer(prompt)
         #self.tokenCount = len(self.tokenList[0])
         self.tokenCount = self.tokenizer.tokenizer(prompt)
-        #print('Current tokenCount: ', self.tokenCount)
+        print('Current tokenCount: ', self.tokenCount)
         return self.tokenCount
     
     def maxTokenSize(self):
