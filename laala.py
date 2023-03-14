@@ -36,7 +36,7 @@ max_response_size = 500
 
 class tokenizerClass:
     def __init__(self):
-        self.tokenModel = tiktoken.get_encoding("cl100k_base")
+        self.tokenModel = tiktoken.encoding_for_model('gpt-3.5-turbo')
 
     def tokenizer(self, prompt2):
         self.splitIntoTokens = self.tokenModel.encode(prompt2)
@@ -52,7 +52,7 @@ class historyTokenManager:
         #self.tokenList = self.tokenizer(prompt)
         #self.tokenCount = len(self.tokenList[0])
         self.tokenCount = self.tokenizer.tokenizer(prompt)
-        print('Current tokenCount: ', self.tokenCount)
+        #print('Current tokenCount: ', self.tokenCount)
         return self.tokenCount
     
     def maxTokenSize(self):
