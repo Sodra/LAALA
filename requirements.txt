@@ -1,3 +1,2 @@
 colorama
-transformers
 openai
