@@ -31,7 +31,7 @@ else:
 # Contains Message History for gpt context
 max_context_size = 4096
 # response size affects API request
-max_response_size = 500
+max_response_size = 300
 #max_history_size = max_context_size - max_response_size
 
 class tokenizerClass:
@@ -40,6 +40,7 @@ class tokenizerClass:
 
     def tokenizer(self, prompt2):
         self.splitIntoTokens = self.tokenModel.encode(prompt2)
+        #print(self.splitIntoTokens)
         return len(self.splitIntoTokens)
 
 class historyTokenManager:
@@ -52,7 +53,7 @@ class historyTokenManager:
         #self.tokenList = self.tokenizer(prompt)
         #self.tokenCount = len(self.tokenList[0])
         self.tokenCount = self.tokenizer.tokenizer(prompt)
-        #print('Current tokenCount: ', self.tokenCount)
+        print('Current tokenCount: ', self.tokenCount)
         return self.tokenCount
     
     def maxTokenSize(self):
@@ -73,9 +74,9 @@ class historyTokenManager:
         #self.currentAmountOfTokens = sum(item[1] for item in message_history)
         self.totalAllowedTokens = self.maxTokenSize()
         while self.currentAmountOfTokens(message_history) > self.totalAllowedTokens:
-            #print("Message history is currently " + str(self.currentAmountOfTokens(message_history)) + ", popping.")
+            print("Message history is currently " + str(self.currentAmountOfTokens(message_history)) + ", popping.")
             message_history.pop(1)
-        #print("Message history is currently " + str(self.currentAmountOfTokens(message_history)) + ", popping complete.")
+        print("Message history is currently " + str(self.currentAmountOfTokens(message_history)) + ", popping complete.")
         return message_history
 
 #yo if you add "Answer as LAALA" to every last prompt it totally works, you can even remove it per history so it doesn't stay in context
@@ -103,6 +104,7 @@ class MessageHistoryStore:
         #self.message_history = self.historyTokenManager.popTokens(self.message_history)
         self.historyTokenManager.popTokens(self.message_history)
         self.messagesToSend = self.formattedHistoryForAPI()
+        print("Sending this many tokens to the API: " + str(self.historyTokenManager.currentAmountOfTokens(self.message_history)))
         self.rawAPIResponse = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
         		messages = self.messagesToSend,
