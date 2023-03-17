@@ -1,43 +1,76 @@
+#!/usr/bin/env python3
+
 import openai
-from transformers import GPT2TokenizerFast
 from colorama import init, Fore, Back, Style
 from typing import List
 import sys
+import tiktoken
 init()
 
 
-
+#def debugMode():
+#elif "debug" in sys.argv:
+#    pass
 
 if "boring" in sys.argv:
     with open('boring_mode.txt', 'r') as file:
         system_desu = file.read().strip()
-if "big" in sys.argv:
+    print("Boring Mode Activated")
+elif "big" in sys.argv:
     with open('big_text.txt', 'r', encoding='utf-8') as file:
         system_desu = file.read().strip()
 else:
     with open('laala_prompt.txt', 'r') as file:
         system_desu = file.read().strip()
 
-#def debugMode(history_token_size : int) -> None:
-#    if "debug" in sys.argv:
-#        print("")
-#        print("The current context size is: ", history_token_size)
+
+
+    
+
+#TODO make thie use python logging
+#TODO proper name logging, will attach to discord integration
+class chatLog:
+    def writeToLogBeginning(self):
+        with open('chat.log', 'a') as file:
+            file.write(f'##### LAALA ONLINE c: #####\n\n')
+    
+    def writeToLog(self, role, prompt):
+        if role == "user":
+            role = "You"
+        elif role == "assistant":
+            role = "LAALA"
+        with open('chat.log', 'a') as file:
+            file.write(f'{role}: {prompt}\n\n')
+    
+    def __init__(self):
+        self.writeToLogBeginning()
 
 # Message History Class
 # Contains Message History for gpt context
 max_context_size = 4096
 # response size affects API request
-max_response_size = 500
+max_response_size = 300
 #max_history_size = max_context_size - max_response_size
+
+class tokenizerClass:
+    def __init__(self):
+        self.tokenModel = tiktoken.encoding_for_model('gpt-3.5-turbo')
+
+    def tokenizer(self, prompt2):
+        self.splitIntoTokens = self.tokenModel.encode(prompt2)
+        #print(self.splitIntoTokens)
+        return len(self.splitIntoTokens)
 
 class historyTokenManager:
     def __init__(self):
         #print("bingle")
-        self.tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
+        #self.tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
+        self.tokenizer = tokenizerClass()
     
     def countTokens(self, prompt):
-        self.tokenList = self.tokenizer(prompt)
-        self.tokenCount = len(self.tokenList[0])
+        #self.tokenList = self.tokenizer(prompt)
+        #self.tokenCount = len(self.tokenList[0])
+        self.tokenCount = self.tokenizer.tokenizer(prompt)
         #print('Current tokenCount: ', self.tokenCount)
         return self.tokenCount
     
@@ -69,6 +102,7 @@ class MessageHistoryStore:
     def __init__(self):
         self.message_history = []
         self.historyTokenManager = historyTokenManager()
+        self.chatLog = chatLog()
 
     #INPUT: "USER" "HELLO"
     #OUTPUT: [{"role": "USER", "content": "HELLO"}, 1]
@@ -79,6 +113,7 @@ class MessageHistoryStore:
 
     def newEntry(self, prompt, messageSide):
         addThisThingToHistory = self.entryFormatter(prompt, messageSide)
+        self.chatLog.writeToLog(messageSide, prompt)
         self.message_history.append(addThisThingToHistory)
 
     def formattedHistoryForAPI(self):
@@ -89,6 +124,7 @@ class MessageHistoryStore:
         #self.message_history = self.historyTokenManager.popTokens(self.message_history)
         self.historyTokenManager.popTokens(self.message_history)
         self.messagesToSend = self.formattedHistoryForAPI()
+        #print("Sending this many tokens to the API: " + str(self.historyTokenManager.currentAmountOfTokens(self.message_history)))
         self.rawAPIResponse = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
         		messages = self.messagesToSend,
