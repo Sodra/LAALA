@@ -31,7 +31,7 @@ else:
 #TODO proper name logging, will attach to discord integration
 class chatLog:
     def writeToLogBeginning(self):
-        with open('chat.log', 'a') as file:
+        with open('chat.log', 'a', encoding='utf-8') as file:
             file.write(f'##### LAALA ONLINE c: #####\n\n')
     
     def writeToLog(self, role, prompt):
@@ -39,7 +39,7 @@ class chatLog:
             role = "You"
         elif role == "assistant":
             role = "LAALA"
-        with open('chat.log', 'a') as file:
+        with open('chat.log', 'a', encoding='utf-8') as file:
             file.write(f'{role}: {prompt}\n\n')
     
     def __init__(self):
