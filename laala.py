@@ -49,7 +49,7 @@ class chatLog:
 # Contains Message History for gpt context
 max_context_size = 4096
 # response size affects API request
-max_response_size = 300
+max_response_size = 600
 #max_history_size = max_context_size - max_response_size
 
 class tokenizerClass:
