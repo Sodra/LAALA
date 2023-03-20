@@ -120,10 +120,14 @@ class MessageHistoryStore:
         self.historyDictionariesOnly = [item[0] for item in self.message_history]
         return self.historyDictionariesOnly
 
+    def shimInsert(self, messageList):
+        
+
     def sendRequestToAPI(self):
         #self.message_history = self.historyTokenManager.popTokens(self.message_history)
         self.historyTokenManager.popTokens(self.message_history)
         self.messagesToSend = self.formattedHistoryForAPI()
+        self.messagesToSend = self.shimInsert(self.messagesToSend)
         #print("Sending this many tokens to the API: " + str(self.historyTokenManager.currentAmountOfTokens(self.message_history)))
         self.rawAPIResponse = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
