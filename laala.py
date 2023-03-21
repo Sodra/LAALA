@@ -126,7 +126,7 @@ class MessageHistoryStore:
         self.lastMessageContent = f"Respond as LAALA. {self.lastMessageContent}"
         #print(lastMessageContent)
         messageList[-1]["content"] = self.lastMessageContent
-        print("shim added")
+        #print("shim added")
         return messageList
 
     def shimRemove(self, messageList):
@@ -134,7 +134,7 @@ class MessageHistoryStore:
         self.lastMessageContent = messageList[-1]["content"]
         theShim = "Respond as LAALA. "
         if self.lastMessageContent.startswith(theShim):
-            print("shim removed")
+            #print("shim removed")
             messageList[-1]["content"] = self.lastMessageContent[len(theShim):]
         else:
             messageList[-1]["content"] = self.lastMessageContent
