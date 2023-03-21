@@ -121,13 +121,32 @@ class MessageHistoryStore:
         return self.historyDictionariesOnly
 
     def shimInsert(self, messageList):
-        
+        #print(messageList[-1]["content"])
+        self.lastMessageContent = messageList[-1]["content"]
+        self.lastMessageContent = f"Respond as LAALA. {self.lastMessageContent}"
+        #print(lastMessageContent)
+        messageList[-1]["content"] = self.lastMessageContent
+        print("shim added")
+        return messageList
+
+    def shimRemove(self, messageList):
+        #print(messageList[-1]["content"])
+        self.lastMessageContent = messageList[-1]["content"]
+        theShim = "Respond as LAALA. "
+        if self.lastMessageContent.startswith(theShim):
+            print("shim removed")
+            messageList[-1]["content"] = self.lastMessageContent[len(theShim):]
+        else:
+            messageList[-1]["content"] = self.lastMessageContent
+        return messageList
 
     def sendRequestToAPI(self):
         #self.message_history = self.historyTokenManager.popTokens(self.message_history)
         self.historyTokenManager.popTokens(self.message_history)
         self.messagesToSend = self.formattedHistoryForAPI()
         self.messagesToSend = self.shimInsert(self.messagesToSend)
+        #self.messagesToSend = self.shimInsert(self.messagesToSend)
+        #self.messagesToSend = self.shimInsert(self.messagesToSend)
         #print("Sending this many tokens to the API: " + str(self.historyTokenManager.currentAmountOfTokens(self.message_history)))
         self.rawAPIResponse = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
@@ -136,6 +155,7 @@ class MessageHistoryStore:
             )
         ###Response
         self.AI_Response = self.rawAPIResponse.choices[0].message.content
+        self.messagesToSend = self.shimRemove(self.messagesToSend)
         self.newEntry(self.AI_Response, "assistant")
         return self.AI_Response
 
