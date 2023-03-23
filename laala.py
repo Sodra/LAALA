@@ -5,7 +5,12 @@ from colorama import init, Fore, Back, Style
 from typing import List
 import sys
 import tiktoken
-init()
+
+from rich.console import Console
+from rich.prompt import Prompt
+from rich.text import Text
+console = Console()
+#init()
 
 
 #def debugMode():
@@ -190,6 +195,28 @@ class LAALA_UI:
         self.printLAALA(MessageHistoryStore.receiveResponse())
         self.convoLoop(MessageHistoryStore)
 
+class LAALA_UI_rich:
+    def printLAALA(self, x):
+        console.print(f"LAALA: {x}", overflow="fold", style="#FF99CC")
+        console.print("")
+
+    def askLAALA(self):
+        #self.prompt = console.input("You: ", style="#FF9900")
+        self.prompt = Prompt.ask(Text("You", style="#FF9900"))
+        console.print("")
+        return self.prompt
+
+    def convoLoop(self, MessageHistoryStore):
+        MessageHistoryStore.makeRequestToSend(self.askLAALA())
+        self.printLAALA(MessageHistoryStore.receiveResponse())
+        self.convoLoop(MessageHistoryStore)
+
+    def __init__(self, MessageHistoryStore):
+        MessageHistoryStore.makeRequestToSend(system_desu)
+        self.printLAALA(MessageHistoryStore.receiveResponse())
+        self.convoLoop(MessageHistoryStore)
+
+
 
 with open('api.key', 'r') as file:
     priTicket = file.read().strip()
@@ -204,7 +231,7 @@ def inputYourPrompt():
 print("## LAALA ONLINE c: ##\n")
 
 MessageHistoryStore = MessageHistoryStore()
-LAALA = LAALA_UI(MessageHistoryStore)
+LAALA = LAALA_UI_rich(MessageHistoryStore)
 
 
 #MessageHistoryStore.newEntry("bingle", "user")
