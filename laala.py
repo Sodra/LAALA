@@ -7,9 +7,14 @@ import sys
 import tiktoken
 
 from rich.console import Console
-from rich.prompt import Prompt
+#from rich.prompt import Prompt
 from rich.text import Text
 console = Console()
+
+from prompt_toolkit import prompt
+from prompt_toolkit.cursor_shapes import CursorShape, ModalCursorShapeConfig
+from prompt_toolkit.formatted_text import ANSI, HTML
+from prompt_toolkit.key_binding import KeyBindings
 #init()
 
 
@@ -202,7 +207,8 @@ class LAALA_UI_rich:
 
     def askLAALA(self):
         #self.prompt = console.input("You: ", style="#FF9900")
-        self.prompt = Prompt.ask(Text("You", style="#FF9900"))
+        #self.prompt = prompt("You: ", multiline=True, mouse_support=True, cursor=CursorShape.BLINKING_BLOCK)
+        self.prompt = prompt(HTML("<ansigray>Please enter text: </ansigray>"), style=Style.from_dict({'': '#FF9900'}))
         console.print("")
         return self.prompt
 
