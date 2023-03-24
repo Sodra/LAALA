@@ -14,7 +14,16 @@ console = Console()
 from prompt_toolkit import prompt
 from prompt_toolkit.cursor_shapes import CursorShape, ModalCursorShapeConfig
 from prompt_toolkit.formatted_text import ANSI, HTML
+from prompt_toolkit.styles import Style
 from prompt_toolkit.key_binding import KeyBindings
+bindings = KeyBindings()
+
+@bindings.add('c-m')
+def _(event):event.current_buffer.validate_and_handle()
+
+@bindings.add('c-down')
+def _(event):event.current_buffer.insert_text('\n')
+    
 #init()
 
 
@@ -23,6 +32,7 @@ from prompt_toolkit.key_binding import KeyBindings
 #    pass
 
 if "boring" in sys.argv:
+    BORING_MODE=True
     with open('boring_mode.txt', 'r') as file:
         system_desu = file.read().strip()
     print("Boring Mode Activated")
@@ -207,8 +217,7 @@ class LAALA_UI_rich:
 
     def askLAALA(self):
         #self.prompt = console.input("You: ", style="#FF9900")
-        #self.prompt = prompt("You: ", multiline=True, mouse_support=True, cursor=CursorShape.BLINKING_BLOCK)
-        self.prompt = prompt(HTML("<ansigray>Please enter text: </ansigray>"), style=Style.from_dict({'': '#FF9900'}))
+        self.prompt = prompt("You: ", multiline=True, key_bindings=bindings, mouse_support=True, cursor=CursorShape.BLINKING_BLOCK, style=Style.from_dict({'': '#FF9900'}))
         console.print("")
         return self.prompt
 
