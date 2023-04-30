@@ -1,4 +1,4 @@
-import langchain, os, re, sys
+import langchain, os, re, sys, ftfy
 
 from langchain.prompts import (
     ChatPromptTemplate, 
@@ -16,7 +16,7 @@ from langchain.memory import ConversationTokenBufferMemory
 ##############################################################
 
 channelIDsToListen = [1071518668896346162, 1083806446094917682] #bingle channel
-guildIDsToListen = [274453805792362507] #dank emojis
+guildIDsToListen = [274453805792362507, 483363452023472139] #dank emojis
 adminRoleIDsToListen = [483366907777384460, 483366907777384461] #consul
 adminUserIDsToisten = [237773697811742720] #soda
 ALL_CHANNELS = False
@@ -55,13 +55,13 @@ messages = []
 class modelIO:
     def __init__(self):
         self.prompt = ChatPromptTemplate.from_messages([
-            SystemMessagePromptTemplate.from_template("STRICTLY FOLLOW THE FIRST MESSAGE"),
             HumanMessagePromptTemplate.from_template(laala_prompt),
             MessagesPlaceholder(variable_name="history"),
-            HumanMessagePromptTemplate.from_template("{input}")
+            HumanMessagePromptTemplate.from_template("{input}"),
+            SystemMessagePromptTemplate.from_template("Respond as LAALA")
         ])
 
-        self.llm = ChatOpenAI(temperature=1.1)
+        self.llm = ChatOpenAI(temperature=1.15)
         self.memory = ConversationTokenBufferMemory(llm=self.llm, max_token_limit=1024, return_messages=True)
         self.conversation = ConversationChain(
             prompt=self.prompt,
@@ -76,11 +76,14 @@ class modelIO:
     
     def remove_labels(self, rawLaalaResponse):
         #Removes laala: at the beginning, for shim use
-        self.label = r'[Ll][Aa][Aa][Ll][Aa]:'
+        self.label = r'(?i)\blaala\b:'
         self.label2 = r'[Rr][Ee][Ss][Pp][Oo][Nn][Ss][Ee]: '
-        self.cleanedLaalaResponse = re.sub(pattern, '', rawLaalaResponse)
-        self.cleanedLaalaResponse = re.sub(pattern, '', self.cleanedLaalaResponse)
-        return self.cleanedLaalaResponse
+        self.cleanedLaalaResponse = re.sub(self.label, '', rawLaalaResponse)
+        self.cleanedLaalaResponse2 = re.sub(self.label2, '', self.cleanedLaalaResponse)
+        return self.cleanedLaalaResponse2
+    
+    #def remove_labels(self, rawLaalaResponse):
+    #    return rawLaalaResponse
 
     def sendToModel(self, username, messagecontent):
         #Send to remove_label cleaner to remove laala: at the beginning
@@ -100,43 +103,38 @@ print("sup")
 @bot.event
 async def on_message(message):
 
-    #If the message isn't sent by laala
-    if message.author.id != bot.user.id:
+    if message.author.id == bot.user.id \
+            or message.guild.id not in guildIDsToListen \
+            or not (message.channel.id in channelIDsToListen or ALL_CHANNELS):
+        return
 
-        #If allowed in the server scope
-        if message.guild.id in guildIDsToListen:
+    #If admin role is found in user who sent message
+    try:
+        roles = [role.id for role in message.author.roles]
+        if any(role_id in adminRoleIDsToListen for role_id in roles):
 
-            #If allowed in the channel scope
-            if message.channel.id in channelIDsToListen or ALL_CHANNELS:
+            #If laalaoff found in message, shut the bot down
+            if "!laalaoff" in message.content:
+                await message.channel.send("seeya, nerds~")
+                sys.exit()
 
-                #If admin role is found in user who sent message
-                try:
-                    roles = [role.id for role in message.author.roles]
-                    if any(role_id in adminRoleIDsToListen for role_id in roles):
+    except AttributeError:
+        print("Probably clyde detected")
+    
+    #If message is a reply, and replying to laala
+    if message.reference and repliedMessage.author.id == bot.user.id:
+        repliedMessage = await message.channel.fetch_message(message.reference.message_id)
+        
+        #If message is a reply to laala
+        await message.channel.typing()
+        laalaResponse = aipart.sendToModel(message.author.display_name, message.content)
+        await message.reply(ftfy.fix_text(laalaResponse))
 
-                        #If laalaoff found in message, shut the bot down
-                        if "!laalaoff" in message.content:
-                            await message.channel.send("seeya, nerds~")
-                            sys.exit()
-
-                except AttributeError:
-                    print("Probably clyde detected")
-                
-                #If message is a reply
-                if message.reference:
-                    repliedMessage = await message.channel.fetch_message(message.reference.message_id)
-                    
-                    #If message is a reply to laala
-                    if repliedMessage.author.id == bot.user.id:
-                        await message.channel.typing()
-                        laalaResponse = aipart.sendToModel(message.author.display_name, message.content)
-                        await message.reply(laalaResponse)
-                    
-                #If "laala" is found in the message content
-                elif re.search(pattern, message.content):
-                    await message.channel.typing()
-                    laalaResponse = aipart.sendToModel(message.author.display_name, message.content)
-                    await message.reply(laalaResponse)
+    #If "laala" is found in the message content
+    elif re.search(pattern, message.content):
+        await message.channel.typing()
+        laalaResponse = aipart.sendToModel(message.author.display_name, message.content)
+        await message.reply(ftfy.fix_text(laalaResponse))
 
 @bot.event
 async def on_ready():
